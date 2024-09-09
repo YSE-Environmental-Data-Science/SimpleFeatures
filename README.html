@@ -371,82 +371,58 @@ features</p>
 <h1>Data</h1>
 <p>Import FluxNet_Sites_2024.csv. This table was created from the
 FLUXNET site list found at <a href="https://fluxnet.org/sites/site-list-and-pages/?view=table" class="uri">https://fluxnet.org/sites/site-list-and-pages/?view=table</a>.</p>
-<p><code>{r, include=T} FluxNet &lt;- read.csv(&#39;Data/FluxNet_Sites_2024.csv&#39;)</code>
-This dataset includes:</p>
-<table>
-<colgroup>
-<col width="38%" />
-<col width="61%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th align="right">Column Name</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="right">SITE_ID</td>
-<td>Unique site id</td>
-</tr>
-<tr class="even">
-<td align="right">SITE_NAME</td>
-<td>Site name</td>
-</tr>
-<tr class="odd">
-<td align="right">FLUXNET2015</td>
-<td>License information for the data for the two FLUXNET Products</td>
-</tr>
-<tr class="even">
-<td align="right">FLUXNET-CH4</td>
-<td>License information for the data for the two FLUXNET Products</td>
-</tr>
-<tr class="odd">
-<td align="right">LOCATION_LAT</td>
-<td>Location information</td>
-</tr>
-<tr class="even">
-<td align="right">LOCATION_LONG</td>
-<td>Location information</td>
-</tr>
-<tr class="odd">
-<td align="right">LOCATION_ELEV</td>
-<td>Elevation in meters</td>
-</tr>
-<tr class="even">
-<td align="right">IGBP</td>
-<td>Vegetation type</td>
-</tr>
-<tr class="odd">
-<td align="right">MAT</td>
-<td>Mean annual temperature in Celsius</td>
-</tr>
-<tr class="even">
-<td align="right">MAT</td>
-<td>Mean annual precipitation in mm</td>
-</tr>
-</tbody>
-</table>
-<p>Take a look at the file: ```{r, include=T}</p>
-<p>View(FluxNet)</p>
-<pre><code>
-We are interested in exploring the sites with methane data. Lets subset by FLUXNET-CH4.
+<p>```{r, include=T} FluxNet &lt;-
+read.csv(‘Data/FluxNet_Sites_2024.csv’)</p>
+<pre><code>This dataset includes:
+
+ Column Name | Description |
+|------:|-----------|
+|SITE_ID| Unique site id|
+|SITE_NAME|Site name|
+|FLUXNET2015|License information for the data for the two FLUXNET Products|
+|FLUXNET-CH4|License information for the data for the two FLUXNET Products|
+|LOCATION_LAT|Location information|
+|LOCATION_LONG|Location information|
+|LOCATION_ELEV|Elevation in meters|
+|IGBP|Vegetation type|
+|MAT| Mean annual temperature in Celsius|
+|MAT| Mean annual precipitation in mm|
+
+Take a look at the file:
+```{r, include=T}
+
+View(FluxNet) 
+</code></pre>
+<p>Look at the tower site locations:
+<code>{r, include=T} FluxNet %&gt;% ggplot( ) + geom_point( aes( x=LOCATION_LONG , y=LOCATION_LAT))</code>
+Look at the elevation, mean annual temperature, and mean annual
+precipitation for the tower site locations:</p>
+<p>```{r, include=T} FluxNet %&gt;% ggplot( aes(x=LOCATION_ELEV)) +
+geom_histogram(color=“black”, fill=“white”)</p>
+<p>FluxNet %&gt;% ggplot( aes(x=MAT)) + geom_histogram(color=“black”,
+fill=“white”)</p>
+<p>FluxNet %&gt;% ggplot( aes(x=MAP)) + geom_histogram(color=“black”,
+fill=“white”)</p>
+<pre><code>We are interested in exploring the sites with methane data. Lets subset by FLUXNET-CH4.
+
 ```{r, include=T}
 
 FLUXNET.CH4 &lt;- FluxNet %&gt;% filter( FLUXNET.CH4 != &quot;&quot;)
-</code></pre>
-<p>This object is currently a dataframe.
-<code>{r, include=T} class(FLUXNET.CH4)</code></p>
-<p>Lets make it a simple feature using st_as sf().</p>
-<p>```{r, include=T} FLUXNET.CH4.shp &lt;- st_as_sf(x =
-FLUXNET.CH4,<br />
-coords = c(“LOCATION_LONG”, “LOCATION_LAT”), crs =
-“+init=epsg:4326”)</p>
-<p>ggplot(data=FLUXNET.CH4.shp ) + geom_sf()</p>
-<pre><code>check the class:
+View(FLUXNET.CH4 )</code></pre>
+<p>This object is currently a dataframe. ```{r, include=T}
+class(FLUXNET.CH4)</p>
+<pre><code>
+Lets make it a simple feature using st_as sf().
+
 ```{r, include=T}
-class(FLUXNET.CH4.shp)</code></pre>
-<p>Simple features describe how objects in the real world can be
+FLUXNET.CH4.shp &lt;- st_as_sf(x = FLUXNET.CH4,                         
+           coords = c(&quot;LOCATION_LONG&quot;,  &quot;LOCATION_LAT&quot;),
+           crs = &quot;+init=epsg:4326&quot;)
+
+ggplot(data=FLUXNET.CH4.shp ) + geom_sf()
+</code></pre>
+<p>check the class: <code>{r, include=T} class(FLUXNET.CH4.shp)</code>
+Simple features describe how objects in the real world can be
 represented in computers. They have a geometry describing where on earth
 the feature is located, and they have attributes, which describe other
 properties about the feature.</p>
@@ -457,13 +433,6 @@ properties about the feature.</p>
 
 ```{r, include=T}
 print(FLUXNET.CH4.shp, n = 3)</code></pre>
-<p>It is possible to create data.frame objects with geometry
-list-columns that are not of class sf by:</p>
-<p><code>{r, include=T} Fluxnet.ch4.df &lt;- as.data.frame(FLUXNET.CH4.shp)</code>
-Check the class: <code>{r, include=T} class(Fluxnet.ch4.df)</code> Such
-objects: no longer register which column is the geometry list-column no
-longer have a plot method, and lack all of the other dedicated methods
-listed above for class sf</p>
 </div>
 <div id="geometrical-operations" class="section level1">
 <h1>Geometrical Operations</h1>
@@ -489,80 +458,107 @@ FLUXNET.CH4.shp = st_transform(FLUXNET.CH4.shp, &#39;+init=epsg:4087&#39;)</code
 <p>Check the CRS: <code>{r, include=T} st_crs(FLUXNET.CH4.shp)</code>
 st_distance returns a dense numeric matrix with distances between
 geometries:</p>
-<p><code>{r, include=T} st_distance(FLUXNET.CH4.shp[1,], FLUXNET.CH4.shp)</code>
-Use the package AOI to generate a polygon for South America and
-Brazil:</p>
-<p>```{r, include=T} # Creates a simple feature of South America:
-s.america &lt;- aoi_get(country= “South America”, union=T)</p>
-</div>
-<div id="re-project-the-s.america-to-match-fluxnet.ch4" class="section level1">
-<h1>Re-project the s.america to match Fluxnet.ch4:</h1>
-<p>s.america &lt;- st_transform( s.america , ‘+init=epsg:4087’)</p>
-</div>
-<div id="creates-a-simple-feature-of-brazil" class="section level1">
-<h1>Creates a simple feature of Brazil:</h1>
-<p>Brazil &lt;- aoi_get(country= “Brazil”, union=T)</p>
-</div>
-<div id="re-project-the-brazil-to-match-fluxnet.ch4" class="section level1">
-<h1>Re-project the Brazil to match Fluxnet.ch4:</h1>
-<p>Brazil &lt;- st_transform( Brazil , ‘+init=epsg:4087’) # Re-project
-the polygon to match Fluxnet.ch4</p>
+<p>```{r, include=T}</p>
+<p>FLUXNET.CH4.shp$MeanDistance_km &lt;- st_distance(FLUXNET.CH4.shp,
+FLUXNET.CH4.shp) %&gt;% rowMeans()/1000</p>
+<p>FLUXNET.CH4.shp %&gt;% ggplot() + geom_sf(aes(col = MeanDistance_km
+))</p>
+<p>FLUXNET.CH4.shp %&gt;% ggplot( aes(x=MeanDistance_km)) +
+geom_histogram(color=“black”, fill=“white”)</p>
+<pre><code># The package AOI
+
+The AOI package in R stands for Area of Interest. It is primarily used for geographic or spatial data analysis, particularly in defining, visualizing, and working with specific regions or &quot;areas of interest&quot; on maps. The package facilitates interaction with various geographic data sources, allowing users to work with location-based data in a flexible and intuitive way.
+
+### Key Feature of the AOI Package:
+Define Areas of Interest (AOIs): Users can define specific geographic regions of interest using coordinates, addresses, or administrative boundaries (e.g., cities, countries).
+
+### Key Function of the AOI Package:
+
+aoi_get(): Defines an Area of Interest based on a variety of inputs such as bounding box coordinates, administrative boundaries, or addresses.
+
+Example:
+
+```{r, include=T}
+
+library(AOI)
+
+# Define an area of interest by coordinates
+aoi.NY.bb &lt;- aoi_get(&quot;New York&quot;)
+aoi.NY &lt;- aoi_get(state=&quot;New York&quot;)
+
+aoi.NY.bb %&gt;% ggplot() + geom_sf()
+aoi.NY %&gt;% ggplot() + geom_sf()
+</code></pre>
+<p>Creates a simple feature of South America:
+<code>{r, include=T} s.america &lt;- aoi_get(country= &quot;South America&quot;, union=T) s.america %&gt;% ggplot() + geom_sf()</code>
+### What is union =T doing?</p>
+<p>Re-project the s.america to match Fluxnet.ch4:</p>
+<p><code>{r, include=T} aoi.SAmerica &lt;- st_transform( s.america , &#39;+init=epsg:4087&#39;)  aoi.SAmerica  %&gt;% ggplot() + geom_sf()</code></p>
+<p>Creates a simple feature of Brazil and re-project it to match
+Fluxnet.ch4:</p>
+<p>```{r, include=T}</p>
 <pre><code>The commands st_intersects, st_disjoint, st_touches, st_crosses, st_within, st_contains, st_overlaps, st_equals, st_covers, st_covered_by, st_equals_exact and st_is_within_distance all return a sparse matrix with matching (TRUE) indexes, or a full logical matrix:
 
 # How many towers are in South America?
 
 ```{r, include=T}
 
-st_intersects(s.america, Fluxnet.ch4)
-st_intersects(s.america, Fluxnet.ch4, sparse = FALSE)
+st_intersects(aoi.SAmerica, FLUXNET.CH4.shp)
+st_intersects(aoi.SAmerica, FLUXNET.CH4.shp, sparse = FALSE)
 </code></pre>
-</div>
-<div id="how-many-towers-are-in-brazil" class="section level1">
-<h1>How many towers are in Brazil?</h1>
+<div id="how-many-towers-are-in-south-america" class="section level3">
+<h3>How many towers are in South America?</h3>
 <p>```{r, include=T}</p>
-<p>st_intersects(Brazil, Fluxnet.ch4)</p>
 <pre><code>Where possible geometric operations such as st_distance(), st_length() and st_area() report results with a units attribute appropriate for the CRS. 
 
 Calculate the area of Brazil:
 
 ```{r, include=T}
-Brazil$Area &lt;- st_area( Brazil)
+aoi.SAmerica$Area &lt;- st_area(aoi.SAmerica )
 </code></pre>
 <div id="visualize-the-global-distribution-of-towers" class="section level4">
 <h4>Visualize the global distribution of towers:</h4>
 <p>First create a simple feature for all large terrestrial regions in
 Europe, Asia, the Americas, Africa, Australia and New Zealand:</p>
 <p>```{r, include=T}</p>
-</div>
-</div>
-<div id="create-a-shapefile" class="section level1">
-<h1>Create a shapefile:</h1>
-<p>world &lt;- aoi_get(country= c(“Europe”,“Asia” ,“North America”,
-“South America”, “Australia”,“Africa”, “New Zealand”))</p>
+<p>aoi.terrestrial &lt;- aoi_get(country= c(“Europe”,“Asia” ,“North
+America”, “South America”, “Australia”,“Africa”, “New Zealand”))</p>
+<p>aoi.terrestrial %&gt;% ggplot() + geom_sf()</p>
 <pre><code> Look at the CRS:
 ```{r, include=T}
-st_crs(world)</code></pre>
-<p>Re-project the polygon to match FLUXNET.CH4.shp:
-<code>{r, include=T} world &lt;- st_transform( world , &#39;+init=epsg:4087&#39;)</code>
-Visualize the shapefile you created:
-<code>{r, include=T} ggplot(data=world) + geom_sf()</code> Use ggplot to
-visualize the global distribution of Fluxnet CH4 sites:</p>
-<p><code>{r, include=T} ggplot() + geom_sf(data = world) + geom_sf(data = FLUXNET.CH4.shp)</code></p>
+st_crs(aoi.terrestrial)</code></pre>
+<p>Re-project the polygon to match FLUXNET.CH4.shp: ```{r,
+include=T}</p>
+<p>aoi.terrestrial &lt;- aoi_get(country= c(“Europe”,“Asia” ,“North
+America”, “South America”, “Australia”,“Africa”, “New Zealand”)) %&gt;%
+st_transform( 4087 )</p>
+<p>st_crs(aoi.terrestrial)</p>
+<pre><code>Visualize the shapefile you created:
+```{r, include=T}
+aoi.terrestrial %&gt;% ggplot() + geom_sf()</code></pre>
+<p>Use ggplot to visualize the global distribution of Fluxnet CH4
+sites:</p>
+<p><code>{r, include=T} ggplot() + geom_sf(data = aoi.terrestrial) + geom_sf(data = FLUXNET.CH4.shp)</code></p>
 <p>Extract the country from the world simple feature into
-FLUXNET.CH4.shp:
-<code>{r, include=T} FLUXNET.CH4.shp$Country &lt;- st_intersection( world, FLUXNET.CH4.shp)$name</code>
-Explore the Fluxnet CH4 sites:</p>
-<p>```{r, include=T} names(FLUXNET.CH4.shp)</p>
-<p>ggplot(data= FLUXNET.CH4.shp) + geom_point( aes(x=MAT, y=MAP))</p>
-<p>ggplot(data= FLUXNET.CH4.shp) + geom_point( aes(x=MAT, y=MAP,
-col=IGBP))</p>
-<p>FLUXNET.CH4.shp<span class="math inline">\(IGBP &lt;- as.factor(
-FLUXNET.CH4.shp\)</span>IGBP) summary(FLUXNET.CH4.shp$IGBP)</p>
-<pre><code>
-### Writing files using st_write:
+FLUXNET.CH4.shp: ```{r, include=T}</p>
+<p>FLUXNET.CH4.shp<span class="math inline">\(Country &lt;-
+st_intersection( aoi.terrestrial, FLUXNET.CH4.shp)\)</span>name</p>
+<pre><code>Explore the Fluxnet CH4 sites:
 
 ```{r, include=T}
-write_sf(FLUXNET.CH4.shp, &quot;FLUXNET.CH4.shp&quot;) </code></pre>
+names(FLUXNET.CH4.shp)
+
+ggplot(data= FLUXNET.CH4.shp) + geom_point( aes(x=MAT, y=MAP))
+
+ggplot(data= FLUXNET.CH4.shp) + geom_point( aes(x=MAT, y=MAP, col=IGBP))
+
+FLUXNET.CH4.shp$IGBP &lt;- as.factor( FLUXNET.CH4.shp$IGBP)
+summary(FLUXNET.CH4.shp$IGBP)
+</code></pre>
+</div>
+</div>
+<div id="writing-files-using-st_write" class="section level3">
+<h3>Writing files using st_write:</h3>
 <p>When writing, you can use the following arguments to control update
 and delete: update=TRUE causes an existing data source to be updated, if
 it exists; this option is by default TRUE for all database drivers,
@@ -575,6 +571,16 @@ present, before writing the layer in a newly created data source. No
 error is given when the data source does not exist. This option should
 be handled with care, as it may wipe complete directories or
 databases.</p>
+<p><code>{r, include=T} write_sf(FLUXNET.CH4.shp, &quot;data/FLUXNET_CH4.shp&quot;)</code>
+It is possible to create data.frame objects with geometry list-columns
+that are not of class sf by:</p>
+<p><code>{r, include=T} Fluxnet.ch4.df &lt;- as.data.frame(FLUXNET.CH4.shp)</code>
+Check the class: <code>{r, include=T} class(Fluxnet.ch4.df)</code> Such
+objects: no longer register which column is the geometry list-column no
+longer have a plot method, and lack all of the other dedicated methods
+listed above for class sf. To write this object:</p>
+<p><code>{r, include=T} write.csv(Fluxnet.ch4.df, &quot;data/Fluxnet.ch4.df&quot;)</code></p>
+</div>
 <div id="additional-reading" class="section level3">
 <h3>Additional Reading:</h3>
 <p>S. Scheider, B. Gräler, E. Pebesma, C. Stasch, 2016. Modelling
@@ -586,10 +592,9 @@ Environmental Modelling &amp; Software, 51, (149–165, open access).</p>
 </div>
 <div id="post-workshop-assessment" class="section level1">
 <h1>Post Workshop Assessment:</h1>
-<p>Explore the distribution of tower sites and create 2 visualizations
-of this dataset that may be helpful to understand in the design and
-development of models. You are welcome to use any additional data or
-just new plot types.</p>
+<p>Write a 3-page report on the distribution of tower sites discussing
+the strengths and weakness of the current tower representation. Please
+create 2 visualizations. You are welcome to use any additional data.</p>
 </div>
 
 
