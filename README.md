@@ -208,7 +208,7 @@ st_intersects(aoi.SAmerica, FLUXNET.CH4.shp, sparse = FALSE)
 
 ```
 
-### How many towers are in South America?
+### How many towers are in Brazil?
 ```{r, include=T}
 
 
