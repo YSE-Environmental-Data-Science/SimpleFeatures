@@ -27,7 +27,7 @@ The goals of this workshop are to:
 Import FluxNet_Sites_2024.csv. This table was created from the FLUXNET site list found at  https://fluxnet.org/sites/site-list-and-pages/?view=table. 
 
 ```{r, include=T}
-FluxNet <- read.csv('Data/FluxNet_Sites_2024.csv')
+FluxNet <- read.csv('data/FluxNet_Sites_2024.csv')
 
 ```
 This dataset includes:
