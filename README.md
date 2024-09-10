@@ -27,8 +27,7 @@ The goals of this workshop are to:
 Import FluxNet_Sites_2024.csv. This table was created from the FLUXNET site list found at  https://fluxnet.org/sites/site-list-and-pages/?view=table. 
 
 ```{r, include=T}
-FluxNet <- read.csv('data/FluxNet_Sites_2024.csv')
-
+FluxNet <- read.csv('Data/FluxNet_Sites_2024.csv')
 ```
 This dataset includes:
 
@@ -51,34 +50,17 @@ Take a look at the file:
 View(FluxNet) 
 
 ```
-Look at the tower site locations:
-```{r, include=T}
-FluxNet %>% ggplot( ) + geom_point( aes( x=LOCATION_LONG , y=LOCATION_LAT))
-```
-Look at the elevation, mean annual temperature, and mean annual precipitation for the tower site locations:
 
-```{r, include=T}
-FluxNet %>% ggplot( aes(x=LOCATION_ELEV)) + 
-  geom_histogram(color="black", fill="white")
-
-FluxNet %>% ggplot( aes(x=MAT)) + 
-  geom_histogram(color="black", fill="white")
-  
-FluxNet %>% ggplot( aes(x=MAP)) + 
-  geom_histogram(color="black", fill="white")
-```
 We are interested in exploring the sites with methane data. Lets subset by FLUXNET-CH4.
-
 ```{r, include=T}
 
 FLUXNET.CH4 <- FluxNet %>% filter( FLUXNET.CH4 != "")
-View(FLUXNET.CH4 )
+
 ```
 
 This object is currently a dataframe. 
 ```{r, include=T}
 class(FLUXNET.CH4)
-
 ```
 
 Lets make it a simple feature using st_as sf().
@@ -108,6 +90,20 @@ If we print the first three features, we see their attribute values and an abrid
 ```{r, include=T}
 print(FLUXNET.CH4.shp, n = 3)
 ```
+It is possible to create data.frame objects with geometry list-columns that are not of class sf by:
+
+```{r, include=T}
+Fluxnet.ch4.df <- as.data.frame(FLUXNET.CH4.shp)
+```
+Check the class:
+```{r, include=T}
+class(Fluxnet.ch4.df)
+```
+Such objects:
+no longer register which column is the geometry list-column
+no longer have a plot method, and
+lack all of the other dedicated methods listed above for class sf
+
 # Geometrical Operations
 
 There are many geometrical operations that can be used to achieve simple feature manipulation.
@@ -143,59 +139,22 @@ st_crs(FLUXNET.CH4.shp)
 st_distance returns a dense numeric matrix with distances between geometries:
 
 ```{r, include=T}
-
-FLUXNET.CH4.shp$MeanDistance_km <- st_distance(FLUXNET.CH4.shp, FLUXNET.CH4.shp) %>% rowMeans()/1000
-
-FLUXNET.CH4.shp %>% ggplot() + geom_sf(aes(col = MeanDistance_km ))
-
-FLUXNET.CH4.shp %>% ggplot( aes(x=MeanDistance_km)) + 
-  geom_histogram(color="black", fill="white")
-
- ```
-# The package AOI
-
-The AOI package in R stands for Area of Interest. It is primarily used for geographic or spatial data analysis, particularly in defining, visualizing, and working with specific regions or "areas of interest" on maps. The package facilitates interaction with various geographic data sources, allowing users to work with location-based data in a flexible and intuitive way.
-
-### Key Feature of the AOI Package:
-Define Areas of Interest (AOIs): Users can define specific geographic regions of interest using coordinates, addresses, or administrative boundaries (e.g., cities, countries).
-
-### Key Function of the AOI Package:
-
-aoi_get(): Defines an Area of Interest based on a variety of inputs such as bounding box coordinates, administrative boundaries, or addresses.
-
-Example:
-
-```{r, include=T}
-
-library(AOI)
-
-# Define an area of interest by coordinates
-aoi.NY.bb <- aoi_get("New York")
-aoi.NY <- aoi_get(state="New York")
-
-aoi.NY.bb %>% ggplot() + geom_sf()
-aoi.NY %>% ggplot() + geom_sf()
-
+st_distance(FLUXNET.CH4.shp[1,], FLUXNET.CH4.shp)
 ```
-Creates a simple feature of South America:
+Use the package AOI to generate a polygon for South America and Brazil:
+
 ```{r, include=T}
+# Creates a simple feature of South America:
 s.america <- aoi_get(country= "South America", union=T)
-s.america %>% ggplot() + geom_sf()
-```
-### What is union =T doing?
 
-Re-project the s.america to match Fluxnet.ch4: 
+# Re-project the s.america to match Fluxnet.ch4: 
+s.america <- st_transform( s.america , '+init=epsg:4087') 
 
-```{r, include=T}
-aoi.SAmerica <- st_transform( s.america , '+init=epsg:4087') 
-aoi.SAmerica  %>% ggplot() + geom_sf()
-```
+# Creates a simple feature of Brazil:
+Brazil <- aoi_get(country= "Brazil", union=T)
 
-Creates a simple feature of Brazil and re-project it to match Fluxnet.ch4:
-
-```{r, include=T}
-
-
+# Re-project the Brazil to match Fluxnet.ch4:
+Brazil <- st_transform( Brazil , '+init=epsg:4087') # Re-project the polygon to match Fluxnet.ch4
 ```
 The commands st_intersects, st_disjoint, st_touches, st_crosses, st_within, st_contains, st_overlaps, st_equals, st_covers, st_covered_by, st_equals_exact and st_is_within_distance all return a sparse matrix with matching (TRUE) indexes, or a full logical matrix:
 
@@ -203,15 +162,15 @@ The commands st_intersects, st_disjoint, st_touches, st_crosses, st_within, st_c
 
 ```{r, include=T}
 
-st_intersects(aoi.SAmerica, FLUXNET.CH4.shp)
-st_intersects(aoi.SAmerica, FLUXNET.CH4.shp, sparse = FALSE)
+st_intersects(s.america, Fluxnet.ch4)
+st_intersects(s.america, Fluxnet.ch4, sparse = FALSE)
 
 ```
 
-### How many towers are in Brazil?
+# How many towers are in Brazil?
 ```{r, include=T}
 
-
+st_intersects(Brazil, Fluxnet.ch4)
 
 ```
 Where possible geometric operations such as st_distance(), st_length() and st_area() report results with a units attribute appropriate for the CRS. 
@@ -219,7 +178,7 @@ Where possible geometric operations such as st_distance(), st_length() and st_ar
 Calculate the area of Brazil:
 
 ```{r, include=T}
-aoi.SAmerica$Area <- st_area(aoi.SAmerica )
+Brazil$Area <- st_area( Brazil)
 
 ```
 #### Visualize the global distribution of towers:
@@ -228,37 +187,31 @@ First create a simple feature for all large terrestrial regions in Europe, Asia,
 
 ```{r, include=T}
 
-aoi.terrestrial <- aoi_get(country= c("Europe","Asia" ,"North America", "South America", "Australia","Africa", "New Zealand"))
+# Create a shapefile:
+world <- aoi_get(country= c("Europe","Asia" ,"North America", "South America", "Australia","Africa", "New Zealand"))
 
-aoi.terrestrial  %>% ggplot() + geom_sf()
 ```
  Look at the CRS:
 ```{r, include=T}
-st_crs(aoi.terrestrial)
+st_crs(world)
 ``` 
 Re-project the polygon to match FLUXNET.CH4.shp:
 ```{r, include=T}
-
-aoi.terrestrial <- aoi_get(country= c("Europe","Asia" ,"North America", "South America", "Australia","Africa", "New Zealand")) %>% st_transform( 4087 ) 
-
-
-st_crs(aoi.terrestrial)
+world <- st_transform( world , '+init=epsg:4087') 
 ```
 Visualize the shapefile you created:
 ```{r, include=T}
-aoi.terrestrial %>% ggplot() + geom_sf()
+ggplot(data=world) + geom_sf()
 ```
 Use ggplot to visualize the global distribution of Fluxnet CH4 sites:
 
 ```{r, include=T}
-ggplot() + geom_sf(data = aoi.terrestrial) + geom_sf(data = FLUXNET.CH4.shp) 
+ggplot() + geom_sf(data = world) + geom_sf(data = FLUXNET.CH4.shp) 
 ```
 
 Extract the country from the world simple feature into FLUXNET.CH4.shp:
 ```{r, include=T}
-
-FLUXNET.CH4.shp$Country <- st_intersection( aoi.terrestrial, FLUXNET.CH4.shp)$name
-  
+FLUXNET.CH4.shp$Country <- st_intersection( world, FLUXNET.CH4.shp)$name
 ```
 Explore the Fluxnet CH4 sites:
 
@@ -275,33 +228,15 @@ summary(FLUXNET.CH4.shp$IGBP)
 ```
 
 ### Writing files using st_write:
+
+```{r, include=T}
+write_sf(FLUXNET.CH4.shp, "FLUXNET.CH4.shp") 
+```
 When writing, you can use the following arguments to control update and delete: update=TRUE causes an existing data source to be updated, if it exists; this option is by default TRUE for all database drivers, where the database is updated by adding a table.
 
 delete_layer=TRUE causes st_write try to open the data source and delete the layer; no errors are given if the data source is not present, or the layer does not exist in the data source.
 
 delete_dsn=TRUE causes st_write to delete the data source when present, before writing the layer in a newly created data source. No error is given when the data source does not exist. This option should be handled with care, as it may wipe complete directories or databases.
-
-
-```{r, include=T}
-write_sf(FLUXNET.CH4.shp, "data/FLUXNET_CH4.shp") 
-```
-It is possible to create data.frame objects with geometry list-columns that are not of class sf by:
-
-```{r, include=T}
-Fluxnet.ch4.df <- as.data.frame(FLUXNET.CH4.shp)
-```
-Check the class:
-```{r, include=T}
-class(Fluxnet.ch4.df)
-```
-Such objects:
-no longer register which column is the geometry list-column
-no longer have a plot method, and
-lack all of the other dedicated methods listed above for class sf. To write this object:
-
-```{r, include=T}
-write.csv(Fluxnet.ch4.df, "data/Fluxnet.ch4.df") 
-```
 
 ### Additional Reading:
 S. Scheider, B. Gräler, E. Pebesma, C. Stasch, 2016. Modelling spatio-temporal information generation. Int J of Geographic Information Science, 30 (10), 1980-2008. (open access)
@@ -309,4 +244,4 @@ Stasch, C., S. Scheider, E. Pebesma, W. Kuhn, 2014. Meaningful Spatial Predictio
 
 # Post Workshop Assessment:
 
-Write a 3-page report on the distribution of tower sites discussing the strengths and weakness of the current tower representation. Please create 2 visualizations. You are welcome to use any additional data.
+Explore the distribution of tower sites and create 2 visualizations of this dataset that may be helpful to understand in the design and development of models. You are welcome to use any additional data or just new plot types.
