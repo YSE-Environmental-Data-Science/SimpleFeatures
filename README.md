@@ -43,7 +43,7 @@ This dataset includes:
 |LOCATION_ELEV|Elevation in meters|
 |IGBP|Vegetation type|
 |MAT| Mean annual temperature in Celsius|
-|MAP| Mean annual precipitation in mm|
+|MAT| Mean annual precipitation in mm|
 
 Take a look at the file:
 ```{r, include=T}
