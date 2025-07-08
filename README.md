@@ -18,9 +18,10 @@ library(ggplot2)
 # Goals
 
 The goals of this workshop are to:
-1. Become familiar with simple features
-2. Master simple feature manipulation
-3. Visualize simple features
+
+1. Become familiar with simple features.
+2. Master simple feature manipulation.
+3. Visualize simple features.
 
 # Data
 
@@ -43,7 +44,7 @@ This dataset includes:
 |LOCATION_ELEV|Elevation in meters|
 |IGBP|Vegetation type|
 |MAT| Mean annual temperature in Celsius|
-|MAT| Mean annual precipitation in mm|
+|MAP| Mean annual precipitation in mm|
 
 Take a look at the file:
 ```{r, include=T}
@@ -81,7 +82,7 @@ class(FLUXNET.CH4)
 
 ```
 
-Lets make it a simple feature using st_as sf().
+Lets make it a simple feature using st_as_sf().
 
 ```{r, include=T}
 FLUXNET.CH4.shp <- st_as_sf(x = FLUXNET.CH4,                         
@@ -117,7 +118,7 @@ methods(class = "sf")
 ```
 Below we will explore a few methods:
 
-st_is_valid and st_is_simple return a boolean indicating whether a geometry is valid or simple.
+st_is_valid() and st_is_simple() return a boolean indicating whether a geometry is valid or simple.
 
 ```{r, include=T}
 
@@ -131,7 +132,7 @@ Coordinate reference systems (CRS) </a> are like measurement units for coordinat
 proj4string is a generic, string-based description of a CRS, understood by the PROJ library. It defines projection types and (often) defines parameter values for particular projections, and hence can cover an infinite amount of different projections. This library (also used by GDAL) provides functions to convert or transform between different CRS. epsg is the integer ID for a particular, known CRS that can be resolved into a proj4string. Some proj4string values can be resolved back into their corresponding epsg ID, but this does not always work.
 
 The importance of having epsg values stored with data besides proj4string values is that the epsg refers to particular, well-known CRS, whose parameters may change (improve) over time; fixing only the proj4string may remove the possibility to benefit from such improvements, and limit some of the provenance of datasets, but may help reproducibility.
-Coordinate reference system transformations can be carried out using st_transform
+Coordinate reference system transformations can be carried out using st_transform()
 
 ```{r, include=T}
 FLUXNET.CH4.shp = st_transform(FLUXNET.CH4.shp, '+init=epsg:4087')
@@ -140,7 +141,7 @@ Check the CRS:
 ```{r, include=T}
 st_crs(FLUXNET.CH4.shp)
 ```
-st_distance returns a dense numeric matrix with distances between geometries:
+st_distance() returns a dense numeric matrix with distances between geometries:
 
 ```{r, include=T}
 
@@ -170,10 +171,7 @@ Example:
 library(AOI)
 
 # Define an area of interest by coordinates
-aoi.NY.bb <- aoi_get("New York")
 aoi.NY <- aoi_get(state="New York")
-
-aoi.NY.bb %>% ggplot() + geom_sf()
 aoi.NY %>% ggplot() + geom_sf()
 
 ```
@@ -197,7 +195,7 @@ Creates a simple feature of Brazil and re-project it to match Fluxnet.ch4:
 
 
 ```
-The commands st_intersects, st_disjoint, st_touches, st_crosses, st_within, st_contains, st_overlaps, st_equals, st_covers, st_covered_by, st_equals_exact and st_is_within_distance all return a sparse matrix with matching (TRUE) indexes, or a full logical matrix:
+The functions st_intersects(), st_disjoint(), st_touches(), st_crosses(), st_within(), st_contains(), st_overlaps(), st_equals(), st_covers(), st_covered_by(), st_equals_exact() and st_is_within_distance() all return a sparse matrix with matching (TRUE) indexes, or a full logical matrix.
 
 # How many towers are in South America?
 
@@ -224,7 +222,7 @@ aoi.SAmerica$Area <- st_area(aoi.SAmerica )
 ```
 #### Visualize the global distribution of towers:
 
-First create a simple feature for all large terrestrial regions in Europe, Asia, the Americas, Africa, Australia and New Zealand:
+1. First create a simple feature for all large terrestrial regions in Europe, Asia, the Americas, Africa, Australia and New Zealand:
 
 ```{r, include=T}
 
@@ -232,11 +230,11 @@ aoi.terrestrial <- aoi_get(country= c("Europe","Asia" ,"North America", "South A
 
 aoi.terrestrial  %>% ggplot() + geom_sf()
 ```
- Look at the CRS:
+ 2. Look at the CRS:
 ```{r, include=T}
 st_crs(aoi.terrestrial)
 ``` 
-Re-project the polygon to match FLUXNET.CH4.shp:
+3. Re-project the polygon to match FLUXNET.CH4.shp:
 ```{r, include=T}
 
 aoi.terrestrial <- aoi_get(country= c("Europe","Asia" ,"North America", "South America", "Australia","Africa", "New Zealand")) %>% st_transform( 4087 ) 
@@ -244,11 +242,11 @@ aoi.terrestrial <- aoi_get(country= c("Europe","Asia" ,"North America", "South A
 
 st_crs(aoi.terrestrial)
 ```
-Visualize the shapefile you created:
+4. Visualize the shapefile you created:
 ```{r, include=T}
 aoi.terrestrial %>% ggplot() + geom_sf()
 ```
-Use ggplot to visualize the global distribution of Fluxnet CH4 sites:
+5. Use ggplot to visualize the global distribution of Fluxnet CH4 sites:
 
 ```{r, include=T}
 ggplot() + geom_sf(data = aoi.terrestrial) + geom_sf(data = FLUXNET.CH4.shp) 

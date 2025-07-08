@@ -362,9 +362,12 @@ display: none;
 <h3>Load the required libraries for this workshop</h3>
 <p><code>{r, include=T} library(sf) library(AOI) library(tidyverse) library(ggplot2)</code>
 # Goals</p>
-<p>The goals of this workshop are to: - 1. Become familiar with simple
-features. - 2. Master simple feature manipulation. - 3. Visualize simple
-features.</p>
+<p>The goals of this workshop are to:</p>
+<ol style="list-style-type: decimal">
+<li>Become familiar with simple features.</li>
+<li>Master simple feature manipulation.</li>
+<li>Visualize simple features.</li>
+</ol>
 </div>
 </div>
 <div id="data" class="section level1">
@@ -412,7 +415,7 @@ View(FLUXNET.CH4 )</code></pre>
 <p>This object is currently a dataframe. ```{r, include=T}
 class(FLUXNET.CH4)</p>
 <pre><code>
-Lets make it a simple feature using st_as sf().
+Lets make it a simple feature using st_as_sf().
 
 ```{r, include=T}
 FLUXNET.CH4.shp &lt;- st_as_sf(x = FLUXNET.CH4,                         
@@ -440,8 +443,8 @@ print(FLUXNET.CH4.shp, n = 3)</code></pre>
 simple feature manipulation.</p>
 <p><code>{r, include=T} methods(class = &quot;sf&quot;)</code> Below we will
 explore a few methods:</p>
-<p>st_is_valid and st_is_simple return a boolean indicating whether a
-geometry is valid or simple.</p>
+<p>st_is_valid() and st_is_simple() return a boolean indicating whether
+a geometry is valid or simple.</p>
 <p>```{r, include=T}</p>
 <p>st_is_valid(FLUXNET.CH4.shp)</p>
 <pre><code>### Change the CRS to a projected EPGS with st_transform.
@@ -451,12 +454,12 @@ Coordinate reference systems (CRS) &lt;/a&gt; are like measurement units for coo
 proj4string is a generic, string-based description of a CRS, understood by the PROJ library. It defines projection types and (often) defines parameter values for particular projections, and hence can cover an infinite amount of different projections. This library (also used by GDAL) provides functions to convert or transform between different CRS. epsg is the integer ID for a particular, known CRS that can be resolved into a proj4string. Some proj4string values can be resolved back into their corresponding epsg ID, but this does not always work.
 
 The importance of having epsg values stored with data besides proj4string values is that the epsg refers to particular, well-known CRS, whose parameters may change (improve) over time; fixing only the proj4string may remove the possibility to benefit from such improvements, and limit some of the provenance of datasets, but may help reproducibility.
-Coordinate reference system transformations can be carried out using st_transform
+Coordinate reference system transformations can be carried out using st_transform()
 
 ```{r, include=T}
 FLUXNET.CH4.shp = st_transform(FLUXNET.CH4.shp, &#39;+init=epsg:4087&#39;)</code></pre>
 <p>Check the CRS: <code>{r, include=T} st_crs(FLUXNET.CH4.shp)</code>
-st_distance returns a dense numeric matrix with distances between
+st_distance() returns a dense numeric matrix with distances between
 geometries:</p>
 <p>```{r, include=T}</p>
 <p>FLUXNET.CH4.shp$MeanDistance_km &lt;- st_distance(FLUXNET.CH4.shp,
@@ -483,10 +486,7 @@ Example:
 library(AOI)
 
 # Define an area of interest by coordinates
-aoi.NY.bb &lt;- aoi_get(&quot;New York&quot;)
 aoi.NY &lt;- aoi_get(state=&quot;New York&quot;)
-
-aoi.NY.bb %&gt;% ggplot() + geom_sf()
 aoi.NY %&gt;% ggplot() + geom_sf()
 </code></pre>
 <p>Creates a simple feature of South America:
@@ -497,7 +497,7 @@ aoi.NY %&gt;% ggplot() + geom_sf()
 <p>Creates a simple feature of Brazil and re-project it to match
 Fluxnet.ch4:</p>
 <p>```{r, include=T}</p>
-<pre><code>The commands st_intersects, st_disjoint, st_touches, st_crosses, st_within, st_contains, st_overlaps, st_equals, st_covers, st_covered_by, st_equals_exact and st_is_within_distance all return a sparse matrix with matching (TRUE) indexes, or a full logical matrix:
+<pre><code>The functions st_intersects(), st_disjoint(), st_touches(), st_crosses(), st_within(), st_contains(), st_overlaps(), st_equals(), st_covers(), st_covered_by(), st_equals_exact() and st_is_within_distance() all return a sparse matrix with matching (TRUE) indexes, or a full logical matrix.
 
 # How many towers are in South America?
 
@@ -518,26 +518,32 @@ aoi.SAmerica$Area &lt;- st_area(aoi.SAmerica )
 </code></pre>
 <div id="visualize-the-global-distribution-of-towers" class="section level4">
 <h4>Visualize the global distribution of towers:</h4>
-<p>First create a simple feature for all large terrestrial regions in
-Europe, Asia, the Americas, Africa, Australia and New Zealand:</p>
+<ol style="list-style-type: decimal">
+<li>First create a simple feature for all large terrestrial regions in
+Europe, Asia, the Americas, Africa, Australia and New Zealand:</li>
+</ol>
 <p>```{r, include=T}</p>
 <p>aoi.terrestrial &lt;- aoi_get(country= c(“Europe”,“Asia” ,“North
 America”, “South America”, “Australia”,“Africa”, “New Zealand”))</p>
 <p>aoi.terrestrial %&gt;% ggplot() + geom_sf()</p>
-<pre><code> Look at the CRS:
+<pre><code> 2. Look at the CRS:
 ```{r, include=T}
 st_crs(aoi.terrestrial)</code></pre>
-<p>Re-project the polygon to match FLUXNET.CH4.shp: ```{r,
-include=T}</p>
+<ol start="3" style="list-style-type: decimal">
+<li>Re-project the polygon to match FLUXNET.CH4.shp: ```{r,
+include=T}</li>
+</ol>
 <p>aoi.terrestrial &lt;- aoi_get(country= c(“Europe”,“Asia” ,“North
 America”, “South America”, “Australia”,“Africa”, “New Zealand”)) %&gt;%
 st_transform( 4087 )</p>
 <p>st_crs(aoi.terrestrial)</p>
-<pre><code>Visualize the shapefile you created:
+<pre><code>4. Visualize the shapefile you created:
 ```{r, include=T}
 aoi.terrestrial %&gt;% ggplot() + geom_sf()</code></pre>
-<p>Use ggplot to visualize the global distribution of Fluxnet CH4
-sites:</p>
+<ol start="5" style="list-style-type: decimal">
+<li>Use ggplot to visualize the global distribution of Fluxnet CH4
+sites:</li>
+</ol>
 <p><code>{r, include=T} ggplot() + geom_sf(data = aoi.terrestrial) + geom_sf(data = FLUXNET.CH4.shp)</code></p>
 <p>Extract the country from the world simple feature into
 FLUXNET.CH4.shp: ```{r, include=T}</p>
